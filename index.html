@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Enrollment Form</title>
+  <script src="http://api.login2explore.com:5577/js/jpdb-commons.js"></script>
+  <script src="script.js" defer></script>
+  <style>
+    label { display: inline-block; width: 120px; margin: 5px 0; }
+    input { margin: 5px 0; }
+    button { margin: 10px 5px; }
+  </style>
+</head>
+<body onload="resetForm()">
+  <h2>Student Enrollment Form</h2>
+  <form id="studentForm">
+    <label>Roll No:</label><input type="text" id="rollNo" onchange="checkRollNo()" /><br />
+    <label>Full Name:</label><input type="text" id="fullName" disabled /><br />
+    <label>Class:</label><input type="text" id="className" disabled /><br />
+    <label>Birth Date:</label><input type="date" id="birthDate" disabled /><br />
+    <label>Address:</label><input type="text" id="address" disabled /><br />
+    <label>Enrollment Date:</label><input type="date" id="enrollDate" disabled /><br />
+    <button type="button" onclick="saveStudent()" id="saveBtn" disabled>Save</button>
+    <button type="button" onclick="updateStudent()" id="updateBtn" disabled>Update</button>
+    <button type="button" onclick="resetForm()">Reset</button>
+  </form>
+</body>
+</html>
