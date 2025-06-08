@@ -1,28 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
   <title>Student Enrollment Form</title>
-  <script src="http://api.login2explore.com:5577/js/jpdb-commons.js"></script>
-  <script src="script.js" defer></script>
-  <style>
-    label { display: inline-block; width: 120px; margin: 5px 0; }
-    input { margin: 5px 0; }
-    button { margin: 10px 5px; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
-<body onload="resetForm()">
+<body>
+<div class="container">
   <h2>Student Enrollment Form</h2>
   <form id="studentForm">
-    <label>Roll No:</label><input type="text" id="rollNo" onchange="checkRollNo()" /><br />
-    <label>Full Name:</label><input type="text" id="fullName" disabled /><br />
-    <label>Class:</label><input type="text" id="className" disabled /><br />
-    <label>Birth Date:</label><input type="date" id="birthDate" disabled /><br />
-    <label>Address:</label><input type="text" id="address" disabled /><br />
-    <label>Enrollment Date:</label><input type="date" id="enrollDate" disabled /><br />
-    <button type="button" onclick="saveStudent()" id="saveBtn" disabled>Save</button>
-    <button type="button" onclick="updateStudent()" id="updateBtn" disabled>Update</button>
-    <button type="button" onclick="resetForm()">Reset</button>
+    <div class="form-group">
+      <label>Roll No:</label>
+      <input type="text" id="roll" class="form-control" placeholder="Enter Roll No"
+             onblur="checkRoll()" required>
+    </div>
+    <div class="form-group">
+      <label>Full Name:</label>
+      <input type="text" id="name" class="form-control" placeholder="Enter Name">
+    </div>
+    <div class="form-group">
+      <label>Class:</label>
+      <input type="text" id="class" class="form-control" placeholder="Enter Class">
+    </div>
+    <div class="form-group">
+      <label>Birth Date:</label>
+      <input type="date" id="dob" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>Address:</label>
+      <textarea id="address" class="form-control" placeholder="Enter Address"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Enrollment Date:</label>
+      <input type="date" id="enrollDate" class="form-control">
+    </div>
+    <input type="button" class="btn btn-success" id="saveBtn" value="Save" onclick="saveData()" disabled>
+    <input type="button" class="btn btn-warning" id="updateBtn" value="Update" onclick="updateData()" disabled>
+    <input type="button" class="btn btn-danger" id="resetBtn" value="Reset" onclick="resetForm()" disabled>
   </form>
+</div>
+
+<script>
+  const connToken = "90934596|-31949211617963017|90956734";
+  const dbName = "SCHOOL-DB";
+  const relName = "STUDENT-TABLE";
+  const baseURL = "http://api.login2explore.com:5577";
+  const irl = "/api/irl";
+  const iml = "/api/iml";
+
+  $("#roll").focus();
+
+  function resetForm() {
+    $("#studentForm")[0].reset();
+    $("#roll").prop("disabled", false);
+    $("#saveBtn").prop("disabled", true);
+    $("#updateBtn").prop("disabled", true);
+    $("#resetBtn").prop("disabled", true);
+    $("#roll").focus();
+  }
+
+  function validateForm() {
+    if ($("#roll").val() === "" || $("#name").val() === "" || $("#class").val() === "" ||
+        $("#dob").val() === "" || $("#address").val() === "" || $("#enrollDate").val() === "") {
+      alert("All fields are required!");
+      return false;
+    }
+    return true;
+  }
+
+  function checkRoll() {
+    let roll = $("#roll").val();
+    if (roll === "") return;
+
+    let getReq = {
+      token: connToken,
+      cmd: "GET_BY_KEY",
+      dbName: dbName,
+      rel: relName,
+      key: JSON.stringify({ "Roll-No": roll })
+    };
+
+    jQuery.ajaxSetup({ async: false });
+    $.post(baseURL + irl, JSON.stringify(getReq), function (result) {
+      if (result.data) {
+        let record = JSON.parse(result.data).record;
+        $("#name").val(record["Full-Name"]);
+        $("#class").val(record["Class"]);
+        $("#dob").val(record["Birth-Date"]);
+        $("#address").val(record["Address"]);
+        $("#enrollDate").val(record["Enrollment-Date"]);
+        $("#roll").prop("disabled", true);
+        $("#updateBtn").prop("disabled", false);
+      } else {
+        $("#saveBtn").prop("disabled", false);
+      }
+      $("#resetBtn").prop("disabled", false);
+    }).fail(() => {
+      $("#saveBtn").prop("disabled", false);
+      $("#resetBtn").prop("disabled", false);
+    });
+    jQuery.ajaxSetup({ async: true });
+  }
+
+  function saveData() {
+    if (!validateForm()) return;
+
+    let data = {
+      "Roll-No": $("#roll").val(),
+      "Full-Name": $("#name").val(),
+      "Class": $("#class").val(),
+      "Birth-Date": $("#dob").val(),
+      "Address": $("#address").val(),
+      "Enrollment-Date": $("#enrollDate").val()
+    };
+
+    let putReq = {
+      token: connToken,
+      cmd: "PUT",
+      dbName: dbName,
+      rel: relName,
+      jsonStr: JSON.stringify(data)
+    };
+
+    jQuery.ajaxSetup({ async: false });
+    $.post(baseURL + iml, JSON.stringify(putReq), function () {
+      alert("Data Saved Successfully!");
+      resetForm();
+    });
+    jQuery.ajaxSetup({ async: true });
+  }
+
+  function updateData() {
+    if (!validateForm()) return;
+
+    let data = {
+      "Roll-No": $("#roll").val(),
+      "Full-Name": $("#name").val(),
+      "Class": $("#class").val(),
+      "Birth-Date": $("#dob").val(),
+      "Address": $("#address").val(),
+      "Enrollment-Date": $("#enrollDate").val()
+    };
+
+    let updateReq = {
+      token: connToken,
+      cmd: "UPDATE",
+      dbName: dbName,
+      rel: relName,
+      jsonStr: JSON.stringify(data)
+    };
+
+    jQuery.ajaxSetup({ async: false });
+    $.post(baseURL + iml, JSON.stringify(updateReq), function () {
+      alert("Data Updated Successfully!");
+      resetForm();
+    });
+    jQuery.ajaxSetup({ async: true });
+  }
+</script>
 </body>
 </html>
